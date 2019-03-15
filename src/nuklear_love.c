@@ -1061,9 +1061,18 @@ static int nk_love_mousemoved_event(struct nk_love_context *ctx, int x, int y,
 
 static int nk_love_textinput_event(struct nk_context *ctx, const char *text)
 {
-	nk_rune rune;
-	nk_utf_decode(text, &rune, strlen(text));
-	nk_input_unicode(ctx, rune);
+	int text_len = strlen(text);
+	int glyph_len;
+	int src_len = 0;
+	nk_rune unicode;
+
+	glyph_len = nk_utf_decode(text, &unicode, text_len);
+	while (glyph_len && src_len < text_len) {
+		nk_input_unicode(ctx, unicode);
+		src_len = src_len + glyph_len;
+		glyph_len = nk_utf_decode(text + src_len, &unicode, text_len - src_len);
+	}
+
 	return nk_love_is_active(ctx);
 }
 
@@ -4387,7 +4396,7 @@ static int nk_love_input_is_hovered(lua_State *L)
 	lua_pushcfunction(L, func); \
 	lua_setfield(L, -2, name)
 
-LUALIB_API int luaopen_nuklear(lua_State *luaState)
+__declspec(dllexport) int luaopen_nuklear(lua_State *luaState)
 {
 	L = luaState;
 	edit_buffer = nk_love_malloc(NK_LOVE_EDIT_BUFFER_LEN);
