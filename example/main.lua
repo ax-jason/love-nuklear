@@ -13,7 +13,10 @@ local transform = require 'transform'
 
 local ui1, ui2
 
+local composite_str, ime_str = "", ""
 function love.load()
+	local font = love.graphics.newFont("SourceHanSansCN-Regular.otf", 12)
+    love.graphics.setFont(font)
 	ui1, ui2 = nuklear.newUI(), nuklear.newUI()
 end
 
@@ -35,14 +38,19 @@ end
 function love.draw()
 	ui1:draw()
 	ui2:draw()
-	love.graphics.print('Current FPS: '..tostring(love.timer.getFPS( )), 10, 10)
+	--love.graphics.print('Current FPS: '..tostring(love.timer.getFPS( )), 10, 10)
+	if(composite_str and string.len(composite_str)>0) then
+		love.graphics.print(string.format("%s\n%s", composite_str, ime_str))
+	end
 end
 
 local function input(name, ...)
+	love.update(0)
 	return ui2[name](ui2, ...) or ui1[name](ui1, ...)
 end
 
 function love.keypressed(key, scancode, isrepeat)
+	if(composite_str and key == "return") then return end
 	input('keypressed', key, scancode, isrepeat)
 end
 
@@ -69,3 +77,20 @@ end
 function love.wheelmoved(x, y)
 	input('wheelmoved', x, y)
 end
+
+function love.candidateupdated(candidates, selectindex, pagesize, isverticle)
+	local out = ""
+	for i, v in ipairs(candidates) do
+		if(i == selectindex) then
+			out = out .. string.format("%d. [%s]", i, v)
+		else
+			out = out .. string.format("%d.  %s ", i, v)
+		end
+	end
+	ime_str = out
+end
+function love.textedited(text, start, length)
+	composite_str = text
+	if(composite_str and string.len(composite_str) == 0) then composite_str = nil end
+end
+
