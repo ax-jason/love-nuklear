@@ -9,10 +9,35 @@ local slider = {value = 0.2}
 local progress = {value = 1}
 local colorPicker = {value = '#ff0000'}
 local property = {value = 6}
-local edit = {value = 'Edit text'}
+local editValue, editValue2 = {value = 'Edit text'}, {value = 'Edit text'}
 local comboA = {value = 1, items = {'A', 'B', 'C'}}
 
 return function (ui)
+	local has_active_edit
+	local function edit(a, b)
+		local state = ui:edit(a, b)
+
+		local active = (state == "activated" or state == "active") and true
+		if(b.active ~= active) then
+			if(active) then -- just activated
+				--print("activated", b )
+			else -- just deactivated
+				--print("deactivated", b)
+			end
+			b.active = active
+		end
+		if(active) then
+			has_active_edit =  true
+		end
+		--[[if(state == "activated") then
+			love.keyboard.setTextInput(true)
+			print(state, b , editValue.state, editValue2.state)
+		elseif(state == "deactivated") then
+			love.keyboard.setTextInput(false)
+			print(state, b , editValue.state, editValue2.state)
+		end]]
+	end
+	has_active_edit = false
 	if ui:windowBegin('Overview', 100, 100, 600, 450, 'border', 'movable', 'title') then
 		ui:menubarBegin()
 		ui:layoutRow('dynamic', 30, 1)
@@ -80,7 +105,11 @@ return function (ui)
 			ui:spacing(1)
 			ui:label('Edit:')
 			ui:layoutRow('dynamic', 90, 1)
-			ui:edit('box', edit)
+			edit('box', editValue)
+
+			ui:layoutRow('dynamic', 40, 1)
+			edit('box', editValue2)
+
 			ui:layoutRow('dynamic', 5, 1)
 			ui:spacing(1)
 			ui:layoutRow('dynamic', 30, 1)
@@ -104,4 +133,13 @@ return function (ui)
 		end
 	end
 	ui:windowEnd()
+	local function setTextInput(enable, ...)
+		if(love.keyboard.hasTextInput() ~= enable) then
+			print("setTextInput", enable)
+			love.keyboard.setTextInput(enable)
+		end
+	end
+
+	setTextInput(has_active_edit)
+
 end

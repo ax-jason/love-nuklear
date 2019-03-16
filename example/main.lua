@@ -18,6 +18,7 @@ function love.load()
 	local font = love.graphics.newFont("SourceHanSansCN-Regular.otf", 12)
     love.graphics.setFont(font)
 	ui1, ui2 = nuklear.newUI(), nuklear.newUI()
+	love.keyboard.setTextInput(false)
 end
 
 function love.update(dt)
